@@ -66,3 +66,8 @@ group :test do
   gem "selenium-webdriver"
   gem "webdrivers"
 end
+gem 'bootstrap', '~> 5.0.0'
+gem 'dotenv-rails' # To manage environment variables
+gem 'omniauth-github'
+gem "omniauth-rails_csrf_protection"
+gem 'pry'

@@ -1,0 +1,16 @@
+<div class="container text-center mt-5">
+  <% if session[:github_user_id] %>
+    <div class="alert alert-success" role="alert">
+      <h4 class="alert-heading">Welcome, <%= github_current_user.username %>!</h4>
+      <hr>
+      <%= button_to "Sign Out", logout_path, method: :delete, class: "btn btn-danger mt-3" %>
+    </div>
+  <% else %>
+    <div class="jumbotron">
+      <h1 class="display-4">Hello, Welcome to Code Giant!</h1>
+      <p class="lead">Sign in to manage your GitHub projects with ease.</p>
+      <hr class="my-4">
+      <%= button_to "Sign in with GitHub", "/auth/github", class: "btn btn-primary btn-lg", data: { turbo: false } %>
+    </div>
+  <% end %>
+</div>
