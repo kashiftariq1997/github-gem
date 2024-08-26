@@ -14,3 +14,99 @@
  *= require_self
  */
 @import "bootstrap";
+.container {
+    background-color: #f8f9fa;
+    border-radius: 15px;
+    padding: 2rem;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+  }
+  .div-height{
+    height: 400px !important;
+  }
+  .list-group-item {
+    padding: 20px;
+    margin-bottom: 0.5rem;
+    background-color: #fff;
+    border: 1px solid rgba(0,0,0,.125);
+    box-shadow: 0 5px 15px rgba(0,0,0,.1);
+  }
+  .list-group-item:hover {
+    background-color: #f1f1f1;
+  }
+  .label {
+    font-weight: bold;
+    color: #007bff;
+  }
+  .centered-column-container{
+    background-color: #262B2F !important;
+    display: flex !important; 
+    flex-direction: column !important;
+    justify-content: center !important;
+    align-items: center !important;
+  }
+  .text-white{
+    color: white !important;
+  }
+  .auth-button{
+    background-color: #9929BD  !important;
+    border-color: transparent !important;
+  }
+  .space-between-container{
+    display: flex !important;
+    justify-content: space-between  !important;
+    width: 100% !important;
+  }
+  .cancel-button{
+    background-color: #9929BD !important;
+    border-color: transparent  !important;
+    margin-right: 5px !important;
+  }
+  .next-button{
+    background-color: #9929BD !important;
+    border-color: transparent !important;
+    flex-grow: 1 !important;
+    margin-left: 5px !important;
+  }
+  .list-group-setting{
+    background-color: transparent !important;
+    border: 1px solid #9929BD !important;
+    color: white !important;
+  }
+  .edit-button{
+    background-color: #9929BD !important;
+    border-color: transparent !important;
+  }
+  .prefix-field{
+    background-color: transparent !important;
+    border: 3px solid #402688 !important;
+    color:white !important;
+  }
+  .title-field{
+    background-color: transparent !important;
+    border: 3px solid #402688 !important;
+    margin-left:12px !important;
+    color:white !important;
+  }
+  .work-space-field{
+    margin-right: 52px !important;
+  }
+  .alert-info {
+    color: white !important;
+    background-color: transparent !important;
+    border-color: transparent  !important;
+  }
+  .github-button{
+    background-color: #9929BD !important;
+    border-color: transparent !important;
+    margin-left: 5px !important;
+  }
+  .user-mapping-modal{
+    height: 400px !important;
+    overflow-y: scroll !important;
+  }
+  .bg-color{
+    background-color: #262B2F !important;
+  }
+  .text-orange{
+    color: orange !important;
+  }

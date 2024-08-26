@@ -4,12 +4,11 @@ class GithubSessionsController < ApplicationController
   def create
     user = GithubAuthUser.from_omniauth(request.env['omniauth.auth'])
     session[:github_user_id] = user.id
-    redirect_to root_path, notice: "Signed in!"
+    redirect_to root_path, notice: 'You have been successfully logged in.'
   end
 
   def destroy
     session[:github_user_id] = nil
-    redirect_to root_path, notice: "Signed out!"
   end
 
   def failure
