@@ -1,6 +1,7 @@
 class GithubAuthUser < ApplicationRecord
   validates :github_uid, presence: true, uniqueness: true
   validates :username, :email, presence: true
+  has_many :github_repositories, dependent: :destroy
 
   def self.from_omniauth(auth)
     user = find_or_initialize_by(github_uid: auth.uid)
