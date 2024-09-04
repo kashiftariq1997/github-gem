@@ -72,3 +72,6 @@ gem 'omniauth-github'
 gem "omniauth-rails_csrf_protection"
 gem 'pry'
 gem 'byebug'
+gem 'graphql'
+gem 'graphql-client'
+gem 'rest-client'
