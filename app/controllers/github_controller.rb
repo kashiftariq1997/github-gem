@@ -3,7 +3,7 @@ class GithubController < ApplicationController
     @repositories = github_current_user&.github_repositories
   end
 
-  def import
+  def import_repos
     unless github_current_user
       redirect_to root_path, alert: "Authenticate first to continue."
       return
@@ -21,9 +21,12 @@ class GithubController < ApplicationController
           repo.description = repo_data['description']
           repo.url = repo_data['url']
         end
+        project = GithubProject.find_or_create_by!(name: repo_data['name'], github_auth_user: github_current_user)
+        project.update!(prefix: '', github_repository_id: repo.id)
+        FetchAssigneesJob.perform_now(repo.id, github_current_user.id)
       end
 
-      redirect_to github_import_page_path, notice: "Repositories and Issues Imported!"
+      redirect_to github_import_page_path, notice: "Repositories are Imported!"
     else
       redirect_to github_import_page_path, alert: "Failed to import repositories."
     end
@@ -31,33 +34,37 @@ class GithubController < ApplicationController
 
   def fetch_issues
     repo = GithubRepository.find(params[:repository_id])
-    client = GithubClient.new(github_current_user.access_token)
 
-    issues_response = client.execute_query(
-      GithubQueries::ISSUES_QUERY,
-      repositoryName: repo.name,
-      owner: github_current_user.username
+    FetchIssuesJob.perform_later(repo.id, github_current_user.id) # Run in background
+    redirect_to github_edit_repo_path(repo), notice: "Fetching issues for repository #{repo.name}. This may take a few minutes."
+  end
+
+  def edit_repo
+    @repository = GithubRepository.find(params[:id])
+  end
+
+  def create_repo
+    repository = GithubRepository.find_by(id: params[:id])
+    user_provided_name = params[:github_repository][:name]
+
+    # Get the token from the params
+    token = ENV['TOKEN']
+
+    # Enqueue the job with the token and other parameters
+    Rails.logger.info("Enqueuing CreateGithubRepositoryJob with name: #{user_provided_name} and token: #{token}")
+
+    CreateGithubRepositoryJob.perform_later(
+      token,
+      user_provided_name,
+      repository.description,
+      repository.url,
+      github_current_user.username
     )
 
-    if issues_response && issues_response['data']
-      issues = issues_response&.dig('data', 'repository', 'issues', 'nodes')
-
-      if issues.present?
-        issues.each do |issue_data|
-          repo.github_issues.find_or_create_by!(
-            number: issue_data['number']
-          ) do |issue|
-            issue.title = issue_data['title']
-            issue.body = issue_data['body']
-            issue.state = issue_data['state']
-            issue.html_url = issue_data['url']
-          end
-        end
-      else
-        Rails.logger.info "No issues found for repository: #{repo.name}"
-      end
-    else
-      Rails.logger.error "Failed to fetch issues for repository: #{repo.name}"
-    end
+    flash[:notice] = "Repository creation is in progress!"
+    FetchCodegiantUsersJob.perform_now()
+    @project = GithubProject.find_by(id: params[:id])
+    redirect_to github_projects_path(@project)
   end
+
 end

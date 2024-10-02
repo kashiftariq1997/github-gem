@@ -1,0 +1,51 @@
+<!-- Include your custom JavaScript file -->
+<%= javascript_include_tag 'show' %>
+
+<div class="row">
+  <div class="col-md-3"></div>
+  <div class="col-md-6 text-center mt-4 centered-column-container div-height">
+  </div>
+  <div class="col-md-3"></div>
+</div>
+
+<div class="modal fade show" id="fieldMappingModal" tabindex="-1" role="dialog" aria-labelledby="fieldMappingModalLabel" aria-hidden="true" style="display: block;">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content" style="background-color: #2b2f35; border: 1px solid #565c67; box-shadow: 0 4px 8px rgba(0,0,0,0.15);">
+      <div class="modal-header bg-color text-white">
+        <h5 class="modal-title" id="fieldMappingModalLabel">Issue Fields Mapping</h5>
+        <button type="button" class="close" onclick="window.location.href='<%= root_path %>'" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+
+      <div class="modal-body bg-color">
+        <%= render '/shared/alerts' %>
+        <%= form_with model: GithubFieldMapping.new, url: github_field_mappings_path(project_id: params[:project_id]), method: :post, id: 'mappingForm' do |form| %>
+          <!-- Hidden field for project_id -->
+          <%= form.hidden_field :github_project_id, id: 'project_id_hidden_field', value: params[:project_id] %>
+
+          <!-- Field Mappings -->
+          <div id="field_mappings_modal">
+            <div class="row field_mapping mb-2">
+              <div class="col mt-2">
+                <%= form.label :github_field_name, 'Github Fields', class: "text-white" %>
+              </div>
+              <div class="col mt-2">
+                <%= form.label :github_codegiant_field_name, 'Codegiant Fields', class: "text-white" %>
+              </div>
+            </div>
+          </div>
+        <% end %>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="modal-footer d-flex justify-content-between">
+        <!-- Cancel button: Uses root_path fallback -->
+        <%= button_to 'Cancel', request.referer, method: :get, class: 'btn btn-primary btn-lg', style: "background-color: #9929BD; border-color: #9929BD;" %>
+
+        <!-- Changed button to regular button to avoid form conflicts -->
+        <button type="button" class="btn btn-primary btn-lg" id="fetch-codegiant-user-button" style="background-color: #9929BD; border-color: #9929BD;" onclick="showAlertAndSubmitForm()">Next</button>
+      </div>
+    </div>
+  </div>
+</div>
