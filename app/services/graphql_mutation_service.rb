@@ -10,29 +10,24 @@ class GraphqlMutationService
   end
 
   # Method to create a repository
-  def create_repository(workspace_id:, title:, description: nil, import_url: nil, import_url_username: nil, import_url_password: nil, import_url_ssh_key: nil)
+  def create_repository(workspace_id:, title:, access_token:, description: nil, import_url: nil, import_url_username: nil, import_url_password: nil, import_url_ssh_key: nil)
     query = <<~GRAPHQL
       mutation createRepository(
         $workspaceId: ID!,
         $title: String!,
-        $description: String,
-        $importUrl: String,
-        $importUrlUsername: String,
-        $importUrlPassword: String,
-        $importUrlSshKey: String
+        $description: String
       ) {
         createRepository(
           workspaceId: $workspaceId,
           title: $title,
-          description: $description,
-          importUrl: $importUrl,
-          importUrlUsername: $importUrlUsername,
-          importUrlPassword: $importUrlPassword,
-          importUrlSshKey: $importUrlSshKey
+          description: $description
         ) {
           id
           title
           description
+          importUrl
+          httpUrlToRepo
+          sshUrlToRepo
         }
       }
     GRAPHQL
@@ -40,14 +35,12 @@ class GraphqlMutationService
     variables = {
       workspaceId: workspace_id,
       title: title,
-      description: description,
-      importUrl: import_url,
-      importUrlUsername: import_url_username,
-      importUrlPassword: import_url_password,
-      importUrlSshKey: import_url_ssh_key
+      description: description
     }
-
-    execute_query(query, variables)
+    response = execute_query(query, variables)
+    http_url_to_repo = response["createRepository"]["httpUrlToRepo"]
+    pull_and_push_repository(import_url, http_url_to_repo, access_token)
+    response
   end
 
   def create_project(workspace_id:, project_type:, tracking_type:, prefix:, title:)
@@ -147,5 +140,47 @@ class GraphqlMutationService
       { "errors" => "HTTParty Error: #{e.message}" }
     rescue StandardError => e
       { "errors" => "Standard Error: #{e.message}" }
+  end
+
+  def pull_and_push_repository(import_url, http_url_to_repo, access_token)
+    execute_command("git config --global http.postBuffer 524288000")
+
+    tokenized_import_url = import_url.sub("https://", "https://#{access_token}@")
+
+    Dir.mktmpdir do |dir|
+      puts "Cloning into temporary directory: #{dir}"
+
+      clone_command = "git clone #{tokenized_import_url} #{dir}"
+      execute_command(clone_command)
+
+      Dir.chdir(dir) do
+        fetch_command = "git fetch --all"
+        execute_command(fetch_command)
+
+        branches = `git branch -r`.split("\n").map do |branch|
+          branch.strip.sub("origin/", "")
+        end
+
+        branches.reject! { |branch| branch.include?("->") || branch == "HEAD" }
+
+        add_remote_command = "git remote add codegiant #{http_url_to_repo}"
+        execute_command(add_remote_command)
+
+        branches.each do |branch|
+          checkout_command = "git checkout #{branch}"
+          execute_command(checkout_command)
+
+          push_command = "git push codegiant #{branch}"
+          execute_command(push_command)
+        end
+      end
+    end
+  end
+
+  def execute_command(command)
+    stdout, stderr, status = Open3.capture3(command)
+    raise "Command failed: #{command}\nError: #{stderr}" unless status.success?
+
+    stdout
   end
 end
